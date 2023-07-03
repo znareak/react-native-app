@@ -1,17 +1,10 @@
-import React, { useState } from "react";
-import {
-  NativeBaseProvider,
-  Input,
-  Text,
-  Button,
-  extendTheme,
-  useToast,
-} from "native-base";
-import uuid from "react-native-uuid";
+import { useState } from "react";
+import { NativeBaseProvider, extendTheme } from "native-base";
 import { StyleSheet, View, FlatList } from "react-native";
 import { useFonts } from "expo-font";
 import GoalItem from "./components/GoalItem";
 import GoalInput from "./components/GoalInput";
+import uuid from "react-native-uuid";
 
 const theme = extendTheme({
   // config: { initialColorMode: "dark" },
@@ -46,9 +39,7 @@ const theme = extendTheme({
 });
 
 export default function App() {
-  const toast = useToast();
   const [goals, setGoals] = useState([]);
-  const [goalTitle, setGoalTitle] = useState("");
   const [fontsLoaded] = useFonts({
     "Inter-Black": require("./assets/fonts/Inter-Black.ttf"),
     "Inter-Bold": require("./assets/fonts/Inter-Bold.ttf"),
@@ -61,21 +52,16 @@ export default function App() {
     "Inter-Thin": require("./assets/fonts/Inter-Thin.ttf"),
   });
 
-  const addGoal = () => {
-    if (!goalTitle.trim()) {
-      toast.show({
-        title: "Please Enter Text",
-        status: "warning",
-      });
-      return;
-    }
+  const addGoal = (goalTitle, resetGoalTitle) => {
+    if (!goalTitle.trim()) return;
+
     const newGoal = {
       id: uuid.v4(),
       title: goalTitle,
       checked: false,
     };
     setGoals((prev) => [newGoal, ...prev]);
-    setGoalTitle("");
+    resetGoalTitle();
   };
 
   const onChangeTitle = (text) => {
@@ -106,11 +92,7 @@ export default function App() {
   return (
     <NativeBaseProvider theme={theme}>
       <View style={styles.app}>
-        <GoalInput onChangeTitle={onChangeTitle} />
-
-        <Button style={{ marginTop: 10 }} onPress={addGoal}>
-          Agregar a la lista
-        </Button>
+        <GoalInput onChangeTitle={onChangeTitle} addGoal={addGoal} />
 
         <FlatList
           data={goals}
