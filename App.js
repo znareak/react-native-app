@@ -5,15 +5,16 @@ import {
   Text,
   Button,
   extendTheme,
-  HStack,
   useToast,
 } from "native-base";
 import uuid from "react-native-uuid";
-import CheckBox from "react-native-bouncy-checkbox";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, FlatList } from "react-native";
 import { useFonts } from "expo-font";
+import GoalItem from "./components/GoalItem";
+import GoalInput from "./components/GoalInput";
 
 const theme = extendTheme({
+  // config: { initialColorMode: "dark" },
   fontConfig: {
     Inter: {
       100: {
@@ -37,8 +38,6 @@ const theme = extendTheme({
       },
     },
   },
-
-  // Make sure values below matches any of the keys in `fontConfig`
   fonts: {
     heading: "Inter",
     body: "Inter",
@@ -84,7 +83,6 @@ export default function App() {
   };
 
   const onChangeStatus = (id, isSelected) => {
-    console.log({ isSelected });
     const goalsNew = goals.map((goal) => {
       if (id === goal.id) {
         return {
@@ -98,45 +96,30 @@ export default function App() {
     setGoals(goalsNew);
   };
 
+  const onDeleteGoal = (id) => {
+    const filtered = goals.filter((goal) => goal.id !== id);
+    setGoals(filtered);
+  };
+
   if (!fontsLoaded) return;
 
   return (
     <NativeBaseProvider theme={theme}>
       <View style={styles.app}>
-        <Text style={{ marginBottom: 10 }}>Escribe tu objetivo</Text>
-        <Input
-          placeholder="Write your goal"
-          onChangeText={onChangeTitle}
-          value={goalTitle}
-          aria-label="Escribe tu objetivo"
-        />
+        <GoalInput onChangeTitle={onChangeTitle} />
 
         <Button style={{ marginTop: 10 }} onPress={addGoal}>
           Agregar a la lista
         </Button>
 
-        <View style={{ marginTop: 10 }}>
-          {goals.map((goal) => (
-            <HStack
-              w="100%"
-              justifyContent="space-between"
-              alignItems="center"
-              key={goal.id}
-              style={{ marginBottom: 6 }}
-            >
-              <Text
-                style={{
-                  textDecorationLine: goal.checked ? "line-through" : "none",
-                }}
-              >
-                {goal.title}
-              </Text>
-              <CheckBox
-                onPress={(isSelected) => onChangeStatus(goal.id, isSelected)}
-              />
-            </HStack>
-          ))}
-        </View>
+        <FlatList
+          data={goals}
+          style={{ marginTop: 10, flex: 1 }}
+          keyExtractor={(item) => item.id}
+          renderItem={(data) => (
+            <GoalItem {...{ onDeleteGoal, onChangeStatus, ...data.item }} />
+          )}
+        />
       </View>
     </NativeBaseProvider>
   );
@@ -145,5 +128,6 @@ const styles = StyleSheet.create({
   app: {
     paddingTop: 70,
     padding: 30,
+    flex: 1,
   },
 });
